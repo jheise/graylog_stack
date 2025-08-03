@@ -22,17 +22,17 @@ volumes:
       o: bind
 
 networks:
-  ${DOCKER_NETWORK}:
+  graylog_network:
     driver: bridge
 
 services:
   # MongoDB service
   mongodb:
-    image: mongo:${MONGO_VERSION}
+    image: mongo:latest
     container_name: mongodb
     restart: always
     networks:
-      - ${DOCKER_NETWORK}
+      - graylog_network
     volumes:
       - mongo_data:/data/db
     environment:
@@ -46,11 +46,11 @@ services:
 
   # OpenSearch service
   opensearch:
-    image: opensearchproject/opensearch:${OPENSEARCH_VERSION}
+    image: opensearchproject/opensearch:latest
     container_name: opensearch
     restart: always
     networks:
-      - ${DOCKER_NETWORK}
+      - graylog_network
     environment:
       - cluster.name=graylog-cluster
       - node.name=opensearch
@@ -75,11 +75,11 @@ services:
 
   # Graylog service
   graylog:
-    image: graylog/graylog:${GRAYLOG_VERSION}
+    image: graylog/graylog:latest
     container_name: graylog
     restart: always
     networks:
-      - ${DOCKER_NETWORK}
+      - graylog_network
     depends_on:
       - mongodb
       - opensearch

@@ -14,11 +14,11 @@ volumes:
       type: none
       device: ${OPENSEARCH_DATA_PATH}
       o: bind
-  graylog_journal:
+  graylog_data:
     driver: local
     driver_opts:
       type: none
-      device: ${GRAYLOG_DATA_PATH}/journal
+      device: ${GRAYLOG_DATA_PATH}
       o: bind
 
 networks:
@@ -103,7 +103,7 @@ services:
       # - GRAYLOG_JAVA_OPTS="-Xms1g -Xmx1g" # Adjust Graylog JVM heap size if needed
 
     volumes:
-      - graylog_journal:/usr/share/graylog/data/journal
+      - graylog_data:/usr/share/graylog/data/journal
       # Optional: Mount custom Graylog configuration files (uncomment if you have them)
       # - ./graylog-config:/usr/share/graylog/data/config
 

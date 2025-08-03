@@ -75,7 +75,7 @@ services:
 
   # Graylog service
   graylog:
-    image: graylog/graylog:latest
+    image: graylog/graylog:6.3
     container_name: graylog
     restart: always
     networks:

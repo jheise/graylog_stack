@@ -1,0 +1,126 @@
+version: '3.8'
+
+# Define named volumes for persistent data storage
+volumes:
+  mongo_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${MONGO_DATA_PATH}
+      o: bind
+  opensearch_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${OPENSEARCH_DATA_PATH}
+      o: bind
+  graylog_journal:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${GRAYLOG_DATA_PATH}/journal
+      o: bind
+
+networks:
+  ${DOCKER_NETWORK}:
+    driver: bridge
+
+services:
+  # MongoDB service
+  mongodb:
+    image: mongo:${MONGO_VERSION}
+    container_name: mongodb
+    restart: always
+    networks:
+      - ${DOCKER_NETWORK}
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      # Optional: set timezone if needed
+      - TZ=America/Los_Angeles
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  # OpenSearch service
+  opensearch:
+    image: opensearchproject/opensearch:${OPENSEARCH_VERSION}
+    container_name: opensearch
+    restart: always
+    networks:
+      - ${DOCKER_NETWORK}
+    environment:
+      - cluster.name=graylog-cluster
+      - node.name=opensearch
+      - discovery.type=single-node # For single-node deployment
+      - bootstrap.memory_lock=true
+      - OPENSEARCH_JAVA_OPTS="-Xms1g -Xmx1g" # Adjust based on your available RAM
+      - TZ=America/Los_Angeles
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - opensearch_data:/usr/share/opensearch/data
+    ports:
+      # Expose for API access (optional, only if you need direct access)
+      - "9200:9200"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+  # Graylog service
+  graylog:
+    image: graylog/graylog:${GRAYLOG_VERSION}
+    container_name: graylog
+    restart: always
+    networks:
+      - ${DOCKER_NETWORK}
+    depends_on:
+      - mongodb
+      - opensearch
+    environment:
+      # From .env file
+      - GRAYLOG_PASSWORD_SECRET=${GRAYLOG_PASSWORD_SECRET}
+      - GRAYLOG_ROOT_PASSWORD_SHA2=${GRAYLOG_ROOT_PASSWORD_SHA2}
+      - GRAYLOG_HTTP_EXTERNAL_URI=${GRAYLOG_HTTP_EXTERNAL_URI}
+
+      # Graylog core configurations
+      - GRAYLOG_MONGODB_URI=mongodb://mongodb:27017/graylog # Connect to MongoDB service name
+      - GRAYLOG_OPEN_DISTRO_PASSWORD=admin # Default password for OpenSearch system user (admin)
+                                          # Change this in production! If you change it, you must also
+                                          # change the password for the 'admin' user within OpenSearch.
+      - GRAYLOG_OPEN_DISTRO_USERNAME=admin # Default username for OpenSearch system user
+      - GRAYLOG_OPEN_DISTRO_URI=http://opensearch:9200 # Connect to OpenSearch service name
+      - GRAYLOG_TRANSPORT_EMAIL_ENABLED=false # Disable email alerts if not needed
+      - GRAYLOG_HTTP_BIND_ADDRESS=0.0.0.0:9000
+      - GRAYLOG_HTTP_PUBLISH_URI=${GRAYLOG_HTTP_EXTERNAL_URI} # Important for correct API routing
+      - TZ=America/Los_Angeles
+      # - GRAYLOG_JAVA_OPTS="-Xms1g -Xmx1g" # Adjust Graylog JVM heap size if needed
+
+    volumes:
+      - graylog_journal:/usr/share/graylog/data/journal
+      # Optional: Mount custom Graylog configuration files (uncomment if you have them)
+      # - ./graylog-config:/usr/share/graylog/data/config
+
+    ports:
+      # Graylog Web Interface / REST API
+      - "9000:9000"
+      # GELF UDP (for receiving logs from Docker's GELF driver, applications, etc.)
+      - "12201:12201/udp"
+      # GELF TCP
+      - "12201:12201/tcp"
+      # Syslog UDP
+      - "5140:5140/udp"
+      # Syslog TCP
+      - "5140:5140/tcp"
+      # Add other input ports as needed (e.g., Beats, Kafka, etc.)
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"

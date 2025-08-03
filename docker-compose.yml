@@ -57,7 +57,7 @@ services:
       - discovery.type=single-node # For single-node deployment
       - bootstrap.memory_lock=true
       - OPENSEARCH_JAVA_OPTS="-Xms1g -Xmx1g" # Adjust based on your available RAM
-      - OPENSEARCH_INITIAL_ADMIN_PASSWORD="admin"
+      - OPENSEARCH_INITIAL_ADMIN_PASSWORD="password"
       - TZ=America/Los_Angeles
     ulimits:
       memlock:
@@ -92,7 +92,7 @@ services:
 
       # Graylog core configurations
       - GRAYLOG_MONGODB_URI=mongodb://mongodb:27017/graylog # Connect to MongoDB service name
-      - GRAYLOG_OPEN_DISTRO_PASSWORD=admin # Default password for OpenSearch system user (admin)
+      - GRAYLOG_OPEN_DISTRO_PASSWORD=password# Default password for OpenSearch system user (admin)
                                           # Change this in production! If you change it, you must also
                                           # change the password for the 'admin' user within OpenSearch.
       - GRAYLOG_OPEN_DISTRO_USERNAME=admin # Default username for OpenSearch system user

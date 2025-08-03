@@ -46,7 +46,7 @@ services:
 
   # OpenSearch service
   opensearch:
-    image: opensearchproject/opensearch:2.19.3
+    image: opensearchproject/opensearch:latest
     container_name: opensearch
     restart: always
     networks:

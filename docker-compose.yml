@@ -28,7 +28,7 @@ networks:
 services:
   # MongoDB service
   mongodb:
-    image: mongo:latest
+    image: mongo:7
     container_name: mongodb
     restart: always
     networks:
@@ -46,7 +46,7 @@ services:
 
   # OpenSearch service
   opensearch:
-    image: opensearchproject/opensearch:latest
+    image: opensearchproject/opensearch:2.15
     container_name: opensearch
     restart: always
     networks:

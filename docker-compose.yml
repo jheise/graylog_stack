@@ -57,7 +57,7 @@ services:
       - discovery.type=single-node # For single-node deployment
       - bootstrap.memory_lock=true
       - DISABLE_SECURIT?Y_PLUGIN=true
-      - OPENSEARCH_JAVA_OPTS=-Xms1g -Xmx1g # Adjust based on your available RAM
+      - OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m # Adjust based on your available RAM
       - OPENSEARCH_INITIAL_ADMIN_PASSWORD="P4ssword!"
       - TZ=America/Los_Angeles
     ulimits:
